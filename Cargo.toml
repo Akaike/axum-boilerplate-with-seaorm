@@ -1,0 +1,51 @@
+[package]
+name = "core-rs-rewrite"
+version = "0.1.0"
+edition = "2021"
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
+hyper = { version = "1.4.1", features = ["full"] }
+once_cell = "1.19.0"
+axum = { version = "0.7.7", features = ["tracing", "multipart"] }
+axum-extra = { version = "0.9.4", features = ["cookie"] }
+tokio = { version = "1", features = ["full"] }
+tower = "0.5.1"
+tower-http = { version = "0.6.1", features = ["full"] }
+sqlx = { version = "0.8.2", features = [
+    "runtime-tokio",
+    "tls-rustls",
+    "postgres",
+    "uuid",
+    "chrono",
+    "macros",
+    "migrate",
+    "json",
+] }
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+bcrypt = "^0.15"
+anyhow = "1"
+jsonwebtoken = "9.3.0"
+reqwest = { version = "0.12", features = ["json"] }
+http-body-util = "0.1.2"
+envy = "0.4.2"
+dotenvy = "0.15"
+cached = { version = "0.53", features = ["async"] }
+async-trait = "0.1"
+base64 = "0.22"
+uuid = { version = "1.11", features = ["serde", "v4"] }
+validator = { version = "0.18", features = ["derive"] }
+mime = "0.3.17"
+
+[dev-dependencies]
+mockall = "0.13.0"
