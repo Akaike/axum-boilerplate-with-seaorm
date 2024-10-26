@@ -2,5 +2,5 @@ use crate::{app::AppState, routes};
 use axum::Router;
 
 pub fn init() -> Router<AppState> {
-    Router::new().merge(routes::todo::init())
+    Router::new().nest("/api/v1/todos", routes::todo::init())
 }
