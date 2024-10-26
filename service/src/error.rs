@@ -52,9 +52,10 @@ impl IntoResponse for Error {
 
 impl From<DbErr> for Error {
     fn from(err: DbErr) -> Self {
-        tracing::error!("Database error occurred: {:?}", err);
-
-        Error::InternalServerError(err.into())
+        match err {
+            DbErr::RecordNotFound(_) => Error::NotFound,
+            _ => Error::InternalServerError(err.into()),
+        }
     }
 }
 
