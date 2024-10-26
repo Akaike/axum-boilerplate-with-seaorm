@@ -5,11 +5,11 @@ use axum::{
 };
 use sea_orm::DbErr;
 use serde_json::json;
-use thiserror::Error;
+use thiserror::Error as ThisError;
 
-#[derive(Error, Debug)]
+#[derive(ThisError, Debug)]
 #[non_exhaustive]
-pub enum ApiError {
+pub enum Error {
     #[error("Not found error")]
     NotFound,
 
@@ -17,12 +17,12 @@ pub enum ApiError {
     InternalServerError,
 }
 
-impl IntoResponse for ApiError {
+impl IntoResponse for Error {
     fn into_response(self) -> Response {
         tracing::error!("Error occurred: {:?}", self);
 
         let (status, error_message) = match self {
-            ApiError::NotFound => (
+            Error::NotFound => (
                 StatusCode::NOT_FOUND,
                 "The requested resource was not found",
             ),
@@ -44,10 +44,10 @@ impl IntoResponse for ApiError {
     }
 }
 
-impl From<DbErr> for ApiError {
+impl From<DbErr> for Error {
     fn from(err: DbErr) -> Self {
         tracing::error!("Database error occurred: {:?}", err);
 
-        ApiError::InternalServerError
+        Error::InternalServerError
     }
 }
