@@ -9,6 +9,7 @@ pub mod router;
 pub mod routes;
 pub mod server;
 pub mod service;
+pub mod util;
 
 use std::error::Error;
 
