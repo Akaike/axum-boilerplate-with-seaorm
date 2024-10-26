@@ -10,10 +10,10 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(_: Config, db: DatabaseConnection) -> Arc<Self> {
+    pub fn new(_: Config, db: DatabaseConnection) -> Self {
         let todo_repo = Arc::new(TodoRepositoryImpl { db });
         let todo_service = TodoService::new(todo_repo);
 
-        Arc::new(Self { todo_service })
+        Self { todo_service }
     }
 }
