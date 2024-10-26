@@ -4,7 +4,7 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace]
-members = [".", "service", "entity", "migration"]
+members = [".", "server", "entity", "migration"]
 
 [profile.dev]
 opt-level = 0
@@ -15,4 +15,4 @@ opt-level = 3
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 anyhow = "1"
-service-example = { path = "service" }
+server-example = { path = "server" }

@@ -1,3 +1,3 @@
 fn main() {
-    service_example::main()
+    server_example::main()
 }

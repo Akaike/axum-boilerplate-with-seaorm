@@ -1,1 +1,1 @@
-# core-rs-rewrite
+# Server Example v0.1 - Boilerplate
