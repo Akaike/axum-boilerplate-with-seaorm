@@ -1,4 +1,5 @@
 use entity::todo::Model as TodoModel;
+use sea_orm::DbErr;
 
 use crate::repository::todo::TodoRepository;
 use std::sync::Arc;
@@ -14,11 +15,11 @@ impl<R: TodoRepository> TodoService<R> {
         TodoService { repo }
     }
 
-    pub async fn get_todo_by_id(&self, id: Uuid) -> Result<TodoModel, sea_orm::DbErr> {
+    pub async fn get_todo_by_id(&self, id: Uuid) -> Result<TodoModel, DbErr> {
         self.repo.get_by_id(id).await
     }
 
-    pub async fn create_todo(&self, title: String) -> Result<TodoModel, sea_orm::DbErr> {
+    pub async fn create_todo(&self, title: String) -> Result<TodoModel, DbErr> {
         self.repo.create(title).await
     }
 }

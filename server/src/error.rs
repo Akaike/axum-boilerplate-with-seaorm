@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use axum::{
     extract::rejection::JsonRejection,
     http::StatusCode,
@@ -54,6 +55,7 @@ impl From<DbErr> for Error {
     fn from(err: DbErr) -> Self {
         match err {
             DbErr::RecordNotFound(_) => Error::NotFound,
+            DbErr::Custom(err) => Error::InternalServerError(anyhow!(err)),
             _ => Error::InternalServerError(err.into()),
         }
     }

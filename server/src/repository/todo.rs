@@ -1,5 +1,5 @@
-use entity::{todo, todo::Entity as TodoEntity};
-use sea_orm::{DatabaseConnection, EntityTrait, Set};
+use entity::todo::{self, Entity as TodoEntity, Model};
+use sea_orm::{DatabaseConnection, DbErr, EntityTrait, Set};
 use uuid::Uuid;
 
 use async_trait::async_trait;
@@ -17,16 +17,16 @@ pub struct TodoRepositoryImpl {
 
 #[async_trait]
 impl TodoRepository for TodoRepositoryImpl {
-    async fn get_by_id(&self, id: Uuid) -> Result<todo::Model, sea_orm::DbErr> {
+    async fn get_by_id(&self, id: Uuid) -> Result<Model, DbErr> {
         TodoEntity::find_by_id(id).one(&self.db).await.map(|opt| {
-            opt.ok_or(sea_orm::DbErr::RecordNotFound(format!(
+            opt.ok_or(DbErr::RecordNotFound(format!(
                 "Todo with id {} not found",
                 id
             )))
         })?
     }
 
-    async fn create(&self, title: String) -> Result<todo::Model, sea_orm::DbErr> {
+    async fn create(&self, title: String) -> Result<Model, DbErr> {
         let new_todo = todo::ActiveModel {
             id: Set(Uuid::new_v4()),
             title: Set(title),
@@ -38,7 +38,7 @@ impl TodoRepository for TodoRepositoryImpl {
             .one(&self.db)
             .await
             .map(|opt| {
-                opt.ok_or(sea_orm::DbErr::Custom(format!(
+                opt.ok_or(DbErr::Custom(format!(
                     "Failed to retrieve created todo with id {}",
                     res.last_insert_id
                 )))
