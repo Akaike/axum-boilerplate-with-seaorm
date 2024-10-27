@@ -2,11 +2,14 @@ use axum::{
     extract::{Path, State},
     Json,
 };
-use validator::Validate;
-
-use crate::{app::AppState, dto::todo::TodoDto, error::Error, util::validated_json::ValidatedJson};
-use serde::Deserialize;
 use uuid::Uuid;
+
+use crate::{
+    app::AppState,
+    dto::todo::{CreateTodoRequest, TodoDto},
+    error::Error,
+    util::validated_json::ValidatedJson,
+};
 
 pub async fn get_by_id(
     State(AppState { todo_service }): State<AppState>,
@@ -16,16 +19,6 @@ pub async fn get_by_id(
         Ok(todo) => Ok(Json(TodoDto::from(todo))),
         Err(e) => Err(Error::from(e)),
     }
-}
-
-#[derive(Debug, Deserialize, Validate)]
-pub struct CreateTodoRequest {
-    #[validate(length(
-        min = 1,
-        max = 255,
-        message = "must be between 1 and 255 characters long"
-    ))]
-    pub title: String,
 }
 
 pub async fn create(
