@@ -29,3 +29,14 @@ pub struct CreateTodoRequest {
     ))]
     pub title: String,
 }
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateTodoRequest {
+    #[validate(length(
+        min = 1,
+        max = 255,
+        message = "must be between 1 and 255 characters long"
+    ))]
+    pub title: String,
+    pub completed: bool,
+}

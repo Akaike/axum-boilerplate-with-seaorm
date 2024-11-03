@@ -8,6 +8,12 @@ use async_trait::async_trait;
 pub trait TodoRepository: Send + Sync {
     async fn get_by_id(&self, id: Uuid) -> Result<todo::Model, sea_orm::DbErr>;
     async fn create(&self, title: String) -> Result<todo::Model, sea_orm::DbErr>;
+    async fn update(
+        &self,
+        id: Uuid,
+        title: String,
+        completed: bool,
+    ) -> Result<todo::Model, sea_orm::DbErr>;
 }
 
 #[derive(Clone)]
@@ -43,5 +49,27 @@ impl TodoRepository for TodoRepositoryImpl {
                     res.last_insert_id
                 )))
             })?
+    }
+
+    async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DbErr> {
+        let todo = TodoEntity::find_by_id(id).one(&self.db).await?;
+        todo.ok_or(DbErr::RecordNotFound(format!(
+            "Todo with id {} not found",
+            id
+        )))?;
+
+        let updated_todo = todo::ActiveModel {
+            id: Set(id),
+            title: Set(title),
+            completed: Set(completed),
+        };
+
+        TodoEntity::update(updated_todo).exec(&self.db).await?;
+        TodoEntity::find_by_id(id).one(&self.db).await.map(|opt| {
+            opt.ok_or(DbErr::Custom(format!(
+                "Failed to retrieve updated todo with id {}",
+                id
+            )))
+        })?
     }
 }

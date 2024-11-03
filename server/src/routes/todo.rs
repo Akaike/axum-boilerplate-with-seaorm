@@ -7,6 +7,6 @@ use crate::{app::AppState, handler::todo};
 
 pub fn init() -> Router<AppState> {
     Router::new()
-        .route("/:todo_id", get(todo::get_by_id))
+        .route("/:todo_id", get(todo::get_by_id).put(todo::update))
         .route("/", post(todo::create))
 }

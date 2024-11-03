@@ -22,4 +22,13 @@ impl<R: TodoRepository> TodoService<R> {
     pub async fn create_todo(&self, title: String) -> Result<TodoModel, DbErr> {
         self.repo.create(title).await
     }
+
+    pub async fn update_todo(
+        &self,
+        id: Uuid,
+        title: String,
+        completed: bool,
+    ) -> Result<TodoModel, DbErr> {
+        self.repo.update(id, title, completed).await
+    }
 }
