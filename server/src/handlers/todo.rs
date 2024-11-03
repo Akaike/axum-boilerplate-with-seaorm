@@ -6,9 +6,9 @@ use uuid::Uuid;
 
 use crate::{
     app::AppState,
-    dto::todo::{CreateTodoRequest, TodoDto, UpdateTodoRequest},
+    dtos::todo::{CreateTodoRequest, TodoDto, UpdateTodoRequest},
     error::Error,
-    util::validated_json::ValidatedJson,
+    utils::validated_json::ValidatedJson,
 };
 
 pub async fn get_by_id(

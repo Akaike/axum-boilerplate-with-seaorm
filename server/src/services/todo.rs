@@ -1,7 +1,7 @@
 use entity::todo::Model as TodoModel;
 use sea_orm::DbErr;
 
-use crate::repository::todo::TodoRepository;
+use crate::repositories::todo::TodoRepository;
 use std::sync::Arc;
 use uuid::Uuid;
 
