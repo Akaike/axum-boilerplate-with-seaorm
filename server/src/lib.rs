@@ -10,6 +10,7 @@ pub mod routes;
 pub mod server;
 pub mod service;
 pub mod util;
+pub mod validators;
 
 use std::error::Error;
 

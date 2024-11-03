@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
+use crate::validators::todo::validate_title_length;
+
 #[derive(Serialize, Deserialize)]
 pub struct TodoDto {
     pub id: Uuid,
@@ -22,21 +24,13 @@ impl From<Model> for TodoDto {
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateTodoRequest {
-    #[validate(length(
-        min = 1,
-        max = 255,
-        message = "must be between 1 and 255 characters long"
-    ))]
+    #[validate(custom(function = "validate_title_length"))]
     pub title: String,
 }
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct UpdateTodoRequest {
-    #[validate(length(
-        min = 1,
-        max = 255,
-        message = "must be between 1 and 255 characters long"
-    ))]
+    #[validate(custom(function = "validate_title_length"))]
     pub title: String,
     pub completed: bool,
 }
