@@ -1,1 +1,1 @@
-# Server Example v0.1 - Boilerplate
+# Server Example v0.1 - Boilerplate with SeaORM
