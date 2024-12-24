@@ -1,4 +1,4 @@
-# Rust Boilerplate with SeaORM
+# Axum Boilerplate with SeaORM
 
 This repository provides a basic boilerplate for building Rust applications using [SeaORM](https://www.sea-ql.org/SeaORM/), an async & dynamic ORM for Rust.
 
