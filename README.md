@@ -36,13 +36,12 @@ cd rust-boilerplate-seaorm
 #### Running Migrations:
 ```bash
 cargo run -- generate MIGRATION_NAME
-cargo run
 ```
 
 #### Running the Server:
 Start the server:
 ```bash
-cargo run --bin server
+cargo run
 ```
 
 ## Using SeaORM to Create New Entities
