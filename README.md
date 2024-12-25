@@ -53,9 +53,14 @@ To create new entities, follow these steps:
    ```
 3. Use the SeaORM cli to generate new entities by running:
    ```bash
-   sea-orm-cli generate entity -o src/entity
+   sea-orm-cli generate entity -o entity/src
    ```
    This command generates new entity files based on your database schema.
+
+   You can also skip the migration script step and create entities from your existing database schema.
+   ```bash
+   sea-orm-cli generate entity --database-url postgresql://username:password@localhost:5432/yourdatabase  -o entity/src
+   ```
 
 Refer to the [SeaORM documentation]([SeaORM Documentation](https://www.sea-ql.org/SeaORM/docs/migration/writing-migration/)) for additional details on customizing entities and other advanced features.
 
