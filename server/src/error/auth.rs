@@ -15,7 +15,7 @@ pub enum AuthError {
     TokenExpired,
 
     #[error("JWKS error: {0}")]
-    JwksError(#[from] jsonwebtoken::errors::Error),
+    JwksError(String),
 
     #[error("Missing token")]
     MissingToken,

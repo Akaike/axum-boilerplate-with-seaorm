@@ -17,6 +17,12 @@ pub enum ApiError {
 
     #[error("Not found")]
     NotFound,
+
+    #[error("Request failed: {0}")]
+    RequestFailed(String),
+
+    #[error("Parse error: {0}")]
+    ParseError(String),
 }
 
 impl IntoResponse for ApiError {
@@ -24,7 +30,9 @@ impl IntoResponse for ApiError {
         let (status, message) = match &self {
             Self::BadRequest(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             Self::ValidationError(_) => (StatusCode::BAD_REQUEST, self.to_string()),
+            Self::RequestFailed(_) => (StatusCode::BAD_REQUEST, self.to_string()),
             Self::NotFound => (StatusCode::NOT_FOUND, "Resource not found".into()),
+            Self::ParseError(_) => (StatusCode::BAD_REQUEST, self.to_string()),
         };
 
         let body = Json(json!({

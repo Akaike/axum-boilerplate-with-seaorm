@@ -1,9 +1,12 @@
 use chrono::Utc;
-use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
+use jsonwebtoken::{decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 
-use super::jwks;
-use crate::{config::CONFIG, error::AuthError};
+use super::fetch;
+use crate::{
+    config::CONFIG,
+    error::{ApiError, AuthError, Error},
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
@@ -29,13 +32,31 @@ fn extract_kid(token: &str) -> Result<String, AuthError> {
 }
 
 async fn extract_decoding_key(kid: &str) -> Result<DecodingKey, AuthError> {
-    let jwks = jwks::fetch(&CONFIG.jwks_uri).await?;
+    let jwks = fetch_jwks().await?;
+
     let jwk = jwks
         .find(kid)
         .ok_or_else(|| AuthError::InvalidToken("Key not found in JWKS".into()))?;
 
     DecodingKey::from_jwk(jwk)
         .map_err(|e| AuthError::InvalidToken(format!("Failed to create decoding key: {}", e)))
+}
+
+async fn fetch_jwks() -> Result<JwkSet, AuthError> {
+    let json_value = fetch::fetch_json_cached(&CONFIG.jwks_uri)
+        .await
+        .map_err(|e| match e {
+            Error::Api(ApiError::RequestFailed(msg)) => {
+                AuthError::JwksError(format!("Failed to fetch JWKS: {}", msg))
+            }
+            Error::Api(ApiError::ParseError(msg)) => {
+                AuthError::JwksError(format!("Invalid JWKS response: {}", msg))
+            }
+            _ => AuthError::JwksError("Unexpected error fetching JWKS".to_string()),
+        })?;
+
+    serde_json::from_value(json_value)
+        .map_err(|e| AuthError::JwksError(format!("Failed to parse JWKS: {}", e)))
 }
 
 fn create_validation() -> Validation {
