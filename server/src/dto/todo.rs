@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::validators::todo::validate_title_length;
+use crate::validator::todo::validate_title_length;
 
 #[derive(Serialize, Deserialize)]
 pub struct TodoDto {

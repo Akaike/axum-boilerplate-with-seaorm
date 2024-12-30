@@ -8,7 +8,7 @@ use crate::{
     dto::todo::{CreateTodoRequest, TodoDto, UpdateTodoRequest},
     error::Error,
     state::todo::TodoState,
-    utils::validated_json::ValidatedJson,
+    util::validated_json::ValidatedJson,
 };
 
 pub async fn get_by_id(

@@ -1,4 +1,4 @@
-use crate::{repositories::todo::TodoRepositoryImpl, services::todo::TodoService};
+use crate::{repository::todo::TodoRepositoryImpl, service::todo::TodoService};
 use axum::extract::FromRef;
 
 use super::app::AppState;

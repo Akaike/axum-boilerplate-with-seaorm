@@ -1,6 +1,6 @@
 use entity::todo::Model as TodoModel;
 
-use crate::{error::Error, repositories::todo::TodoRepository};
+use crate::{error::Error, repository::todo::TodoRepository};
 use std::sync::Arc;
 use uuid::Uuid;
 

@@ -3,7 +3,7 @@ use axum::{
     Router,
 };
 
-use crate::{handlers::todo, state::app::AppState};
+use crate::{handler::todo, state::app::AppState};
 
 pub fn init() -> Router<AppState> {
     Router::new()

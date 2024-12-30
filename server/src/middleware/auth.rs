@@ -3,7 +3,7 @@ use reqwest::header;
 
 use crate::{
     error::{AuthError, Error},
-    utils::jwt,
+    util::jwt,
 };
 
 pub async fn is_authenticated(mut req: Request, next: Next) -> Result<Response, Error> {

@@ -1,17 +1,16 @@
 pub mod config;
-pub mod databases;
+pub mod database;
 pub mod dto;
 pub mod error;
-pub mod handlers;
-pub mod middlewares;
-pub mod repositories;
+pub mod handler;
+pub mod middleware;
+pub mod repository;
 pub mod router;
-pub mod routes;
 pub mod server;
-pub mod services;
+pub mod service;
 pub mod state;
-pub mod utils;
-pub mod validators;
+pub mod util;
+pub mod validator;
 
 use std::error::Error;
 
@@ -26,7 +25,7 @@ pub async fn start() -> Result<(), Box<dyn Error>> {
         .with_env_filter(CONFIG.log_level.clone())
         .init();
 
-    let db = databases::postgres::create(&CONFIG).await;
+    let db = database::create(&CONFIG).await;
     let app_state = AppState::new(db);
 
     let router = router::init()
