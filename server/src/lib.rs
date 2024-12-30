@@ -1,4 +1,3 @@
-pub mod app;
 pub mod config;
 pub mod databases;
 pub mod dto;
@@ -10,13 +9,14 @@ pub mod router;
 pub mod routes;
 pub mod server;
 pub mod services;
+pub mod state;
 pub mod utils;
 pub mod validators;
 
 use std::error::Error;
 
-use app::AppState;
 use config::CONFIG;
+use state::app::AppState;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 

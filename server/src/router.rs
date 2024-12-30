@@ -1,4 +1,4 @@
-use crate::{app::AppState, routes};
+use crate::{routes, state::app::AppState};
 use axum::Router;
 
 pub fn init() -> Router<AppState> {
