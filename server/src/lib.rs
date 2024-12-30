@@ -4,6 +4,7 @@ pub mod databases;
 pub mod dtos;
 pub mod error;
 pub mod handlers;
+pub mod middlewares;
 pub mod repositories;
 pub mod router;
 pub mod routes;
@@ -15,20 +16,18 @@ pub mod validators;
 use std::error::Error;
 
 use app::AppState;
-use config::load_config;
+use config::CONFIG;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
 #[tokio::main]
 pub async fn start() -> Result<(), Box<dyn Error>> {
-    let config = load_config();
-
     tracing_subscriber::fmt()
-        .with_env_filter(config.log_level.clone())
+        .with_env_filter(CONFIG.log_level.clone())
         .init();
 
-    let db = databases::postgres::create(&config).await;
-    let app_state = AppState::new(config, db);
+    let db = databases::postgres::create(&CONFIG).await;
+    let app_state = AppState::new(db);
 
     let router = router::init()
         .with_state(app_state)

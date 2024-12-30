@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
 
-use crate::{config::Config, repositories::todo::TodoRepositoryImpl, services::todo::TodoService};
+use crate::{repositories::todo::TodoRepositoryImpl, services::todo::TodoService};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -10,7 +10,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(_: Config, db: DatabaseConnection) -> Self {
+    pub fn new(db: DatabaseConnection) -> Self {
         let todo_repo = Arc::new(TodoRepositoryImpl { db });
         let todo_service = TodoService::new(todo_repo);
 
