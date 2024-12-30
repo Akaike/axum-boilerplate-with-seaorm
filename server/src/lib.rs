@@ -1,7 +1,7 @@
 pub mod app;
 pub mod config;
 pub mod databases;
-pub mod dtos;
+pub mod dto;
 pub mod error;
 pub mod handlers;
 pub mod middlewares;

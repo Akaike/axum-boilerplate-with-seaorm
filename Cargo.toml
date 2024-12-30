@@ -13,6 +13,4 @@ opt-level = 0
 opt-level = 3
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
-anyhow = "1"
 server-example = { path = "server" }

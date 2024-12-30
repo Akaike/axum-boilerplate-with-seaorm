@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     app::AppState,
-    dtos::todo::{CreateTodoRequest, TodoDto, UpdateTodoRequest},
+    dto::todo::{CreateTodoRequest, TodoDto, UpdateTodoRequest},
     error::Error,
     utils::validated_json::ValidatedJson,
 };
