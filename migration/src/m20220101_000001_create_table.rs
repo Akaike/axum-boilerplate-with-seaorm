@@ -6,6 +6,8 @@ enum Todo {
     Id,
     Title,
     Completed,
+    CreatedAt,
+    UpdatedAt,
 }
 
 #[derive(DeriveMigrationName)]
@@ -22,6 +24,16 @@ impl MigrationTrait for Migration {
                     .col(uuid(Todo::Id).not_null().primary_key())
                     .col(string(Todo::Title).not_null())
                     .col(boolean(Todo::Completed).not_null().default(false))
+                    .col(
+                        timestamp_with_time_zone(Todo::CreatedAt)
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
+                    .col(
+                        timestamp_with_time_zone(Todo::UpdatedAt)
+                            .not_null()
+                            .default(Expr::current_timestamp()),
+                    )
                     .to_owned(),
             )
             .await
