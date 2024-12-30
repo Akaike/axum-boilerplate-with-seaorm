@@ -1,7 +1,6 @@
 use entity::todo::Model as TodoModel;
-use sea_orm::DbErr;
 
-use crate::repositories::todo::TodoRepository;
+use crate::{error::Error, repositories::todo::TodoRepository};
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -15,12 +14,12 @@ impl<R: TodoRepository> TodoService<R> {
         TodoService { repo }
     }
 
-    pub async fn get_todo_by_id(&self, id: Uuid) -> Result<TodoModel, DbErr> {
-        self.repo.get_by_id(id).await
+    pub async fn get_todo_by_id(&self, id: Uuid) -> Result<TodoModel, Error> {
+        Ok(self.repo.get_by_id(id).await?)
     }
 
-    pub async fn create_todo(&self, title: String) -> Result<TodoModel, DbErr> {
-        self.repo.create(title).await
+    pub async fn create_todo(&self, title: String) -> Result<TodoModel, Error> {
+        Ok(self.repo.create(title).await?)
     }
 
     pub async fn update_todo(
@@ -28,7 +27,7 @@ impl<R: TodoRepository> TodoService<R> {
         id: Uuid,
         title: String,
         completed: bool,
-    ) -> Result<TodoModel, DbErr> {
-        self.repo.update(id, title, completed).await
+    ) -> Result<TodoModel, Error> {
+        Ok(self.repo.update(id, title, completed).await?)
     }
 }

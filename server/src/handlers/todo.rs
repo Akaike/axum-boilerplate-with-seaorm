@@ -12,35 +12,32 @@ use crate::{
 };
 
 pub async fn get_by_id(
-    State(AppState { todo_service }): State<AppState>,
+    State(state): State<AppState>,
     Path(todo_id): Path<Uuid>,
 ) -> Result<Json<TodoDto>, Error> {
-    match todo_service.get_todo_by_id(todo_id).await {
-        Ok(todo) => Ok(Json(TodoDto::from(todo))),
-        Err(e) => Err(Error::from(e)),
-    }
+    let todo = state.todo_service.get_todo_by_id(todo_id).await?;
+
+    Ok(Json(TodoDto::from(todo)))
 }
 
 pub async fn create(
-    State(AppState { todo_service }): State<AppState>,
+    State(state): State<AppState>,
     ValidatedJson(payload): ValidatedJson<CreateTodoRequest>,
 ) -> Result<Json<TodoDto>, Error> {
-    match todo_service.create_todo(payload.title).await {
-        Ok(todo) => Ok(Json(TodoDto::from(todo))),
-        Err(e) => Err(Error::from(e)),
-    }
+    let todo = state.todo_service.create_todo(payload.title).await?;
+
+    Ok(Json(TodoDto::from(todo)))
 }
 
 pub async fn update(
-    State(AppState { todo_service }): State<AppState>,
+    State(state): State<AppState>,
     Path(todo_id): Path<Uuid>,
     ValidatedJson(payload): ValidatedJson<UpdateTodoRequest>,
 ) -> Result<Json<TodoDto>, Error> {
-    match todo_service
+    let todo = state
+        .todo_service
         .update_todo(todo_id, payload.title, payload.completed)
-        .await
-    {
-        Ok(todo) => Ok(Json(TodoDto::from(todo))),
-        Err(e) => Err(Error::from(e)),
-    }
+        .await?;
+
+    Ok(Json(TodoDto::from(todo)))
 }

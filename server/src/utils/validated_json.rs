@@ -7,7 +7,7 @@ use axum::{
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
-use crate::error::Error;
+use crate::error::{ApiError, Error};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedJson<T>(pub T);
@@ -36,9 +36,13 @@ where
     type Rejection = Error;
 
     async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
-        let Json(value) = Json::<T>::from_request(req, state).await?;
+        let Json(value) = Json::<T>::from_request(req, state)
+            .await
+            .map_err(|e| Error::Api(ApiError::BadRequest(e.to_string())))?;
 
-        value.validate().map_err(Error::from)?;
+        value
+            .validate()
+            .map_err(|e| Error::Api(ApiError::ValidationError(e)))?;
 
         Ok(ValidatedJson(value))
     }

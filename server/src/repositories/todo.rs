@@ -1,19 +1,21 @@
 use entity::todo::{self, Entity as TodoEntity, Model};
-use sea_orm::{DatabaseConnection, DbErr, EntityTrait, Set};
+use sea_orm::{DatabaseConnection, EntityTrait, Set};
 use uuid::Uuid;
 
 use async_trait::async_trait;
 
+use crate::error::DbError;
+
 #[async_trait]
 pub trait TodoRepository: Send + Sync {
-    async fn get_by_id(&self, id: Uuid) -> Result<todo::Model, sea_orm::DbErr>;
-    async fn create(&self, title: String) -> Result<todo::Model, sea_orm::DbErr>;
+    async fn get_by_id(&self, id: Uuid) -> Result<todo::Model, DbError>;
+    async fn create(&self, title: String) -> Result<todo::Model, DbError>;
     async fn update(
         &self,
         id: Uuid,
         title: String,
         completed: bool,
-    ) -> Result<todo::Model, sea_orm::DbErr>;
+    ) -> Result<todo::Model, DbError>;
 }
 
 #[derive(Clone)]
@@ -23,16 +25,14 @@ pub struct TodoRepositoryImpl {
 
 #[async_trait]
 impl TodoRepository for TodoRepositoryImpl {
-    async fn get_by_id(&self, id: Uuid) -> Result<Model, DbErr> {
-        TodoEntity::find_by_id(id).one(&self.db).await.map(|opt| {
-            opt.ok_or(DbErr::RecordNotFound(format!(
-                "Todo with id {} not found",
-                id
-            )))
-        })?
+    async fn get_by_id(&self, id: Uuid) -> Result<Model, DbError> {
+        TodoEntity::find_by_id(id)
+            .one(&self.db)
+            .await
+            .map(|opt| opt.ok_or(DbError::NotFound))?
     }
 
-    async fn create(&self, title: String) -> Result<Model, DbErr> {
+    async fn create(&self, title: String) -> Result<Model, DbError> {
         let new_todo = todo::ActiveModel {
             id: Set(Uuid::new_v4()),
             title: Set(title),
@@ -43,20 +43,12 @@ impl TodoRepository for TodoRepositoryImpl {
         TodoEntity::find_by_id(res.last_insert_id)
             .one(&self.db)
             .await
-            .map(|opt| {
-                opt.ok_or(DbErr::Custom(format!(
-                    "Failed to retrieve created todo with id {}",
-                    res.last_insert_id
-                )))
-            })?
+            .map(|opt| opt.ok_or(DbError::NotFound))?
     }
 
-    async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DbErr> {
+    async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DbError> {
         let todo = TodoEntity::find_by_id(id).one(&self.db).await?;
-        todo.ok_or(DbErr::RecordNotFound(format!(
-            "Todo with id {} not found",
-            id
-        )))?;
+        todo.ok_or(DbError::NotFound)?;
 
         let updated_todo = todo::ActiveModel {
             id: Set(id),
@@ -65,11 +57,9 @@ impl TodoRepository for TodoRepositoryImpl {
         };
 
         TodoEntity::update(updated_todo).exec(&self.db).await?;
-        TodoEntity::find_by_id(id).one(&self.db).await.map(|opt| {
-            opt.ok_or(DbErr::Custom(format!(
-                "Failed to retrieve updated todo with id {}",
-                id
-            )))
-        })?
+        TodoEntity::find_by_id(id)
+            .one(&self.db)
+            .await
+            .map(|opt| opt.ok_or(DbError::NotFound))?
     }
 }
