@@ -1,5 +1,7 @@
 use axum::{
     extract::{Path, State},
+    http::StatusCode,
+    response::{IntoResponse, NoContent},
     Json,
 };
 use uuid::Uuid;
@@ -23,10 +25,10 @@ pub async fn get_by_id(
 pub async fn create(
     State(state): State<TodoState>,
     ValidatedJson(payload): ValidatedJson<CreateTodo>,
-) -> Result<Json<Todo>, Error> {
+) -> Result<impl IntoResponse, Error> {
     let todo = state.todo_service.create_todo(payload.title).await?;
 
-    Ok(Json(Todo::from(todo)))
+    Ok((StatusCode::CREATED, Json(Todo::from(todo))))
 }
 
 pub async fn update(
@@ -40,4 +42,13 @@ pub async fn update(
         .await?;
 
     Ok(Json(Todo::from(todo)))
+}
+
+pub async fn delete(
+    State(state): State<TodoState>,
+    Path(todo_id): Path<Uuid>,
+) -> Result<NoContent, Error> {
+    state.todo_service.delete_todo(todo_id).await?;
+
+    Ok(NoContent)
 }

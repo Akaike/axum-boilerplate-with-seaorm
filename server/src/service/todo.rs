@@ -30,4 +30,8 @@ impl<R: TodoRepository> TodoService<R> {
     ) -> Result<TodoModel, Error> {
         Ok(self.repo.update(id, title, completed).await?)
     }
+
+    pub async fn delete_todo(&self, id: Uuid) -> Result<(), Error> {
+        Ok(self.repo.delete(id).await?)
+    }
 }

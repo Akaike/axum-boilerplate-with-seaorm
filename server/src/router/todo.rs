@@ -1,14 +1,16 @@
 use axum::{
-    middleware,
     routing::{get, post},
     Router,
 };
 
-use crate::{handler::todo, middleware::auth::is_authenticated, state::app::AppState};
+use crate::{handler::todo, state::app::AppState};
 
 pub fn init() -> Router<AppState> {
     let router = Router::new()
-        .route("/:todo_id", get(todo::get_by_id).put(todo::update))
+        .route(
+            "/:todo_id",
+            get(todo::get_by_id).put(todo::update).delete(todo::delete),
+        )
         .route("/", post(todo::create));
 
     // Uncomment to enable JWT authentication for all routes in this router

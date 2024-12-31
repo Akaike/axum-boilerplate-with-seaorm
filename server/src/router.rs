@@ -1,4 +1,4 @@
-pub mod todo;
+mod todo;
 
 use crate::state::app::AppState;
 use axum::Router;

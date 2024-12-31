@@ -16,6 +16,7 @@ pub trait TodoRepository: Send + Sync {
         title: String,
         completed: bool,
     ) -> Result<todo::Model, DbError>;
+    async fn delete(&self, id: Uuid) -> Result<(), DbError>;
 }
 
 #[derive(Clone)]
@@ -61,5 +62,14 @@ impl TodoRepository for TodoRepositoryImpl {
             .one(&self.db)
             .await
             .map(|opt| opt.ok_or(DbError::NotFound))?
+    }
+
+    async fn delete(&self, id: Uuid) -> Result<(), DbError> {
+        let todo = TodoEntity::find_by_id(id).one(&self.db).await?;
+        todo.ok_or(DbError::NotFound)?;
+
+        TodoEntity::delete_by_id(id).exec(&self.db).await?;
+        
+        Ok(())
     }
 }

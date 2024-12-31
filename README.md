@@ -77,6 +77,7 @@ Refer to the [SeaORM Documentation](https://www.sea-ql.org/SeaORM/docs/migration
 - `GET /api/v1/todos/:id` - Get a todo by ID
 - `POST /api/v1/todos` - Create a new todo
 - `PUT /api/v1/todos/:id` - Update a todo
+- `DELETE /api/v1/todos/:id` - Delete a todo
 
 ### Request/Response Examples
 
@@ -99,6 +100,11 @@ Content-Type: application/json
     "title": "Updated todo",
     "completed": true
 }
+```
+
+#### Delete Todo
+```bash
+DELETE /api/v1/todos/:id
 ```
 
 ## Contributing
