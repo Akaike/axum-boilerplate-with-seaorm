@@ -68,6 +68,7 @@ cargo run
 ```bash
 cargo run
 ```
+By default, the server runs on port 3000. To change this, adjust the configuration in /server/src/server.rs
 
 Refer to the [SeaORM Documentation](https://www.sea-ql.org/SeaORM/docs/migration/writing-migration/) for additional details on customizing entities and other advanced features.
 
