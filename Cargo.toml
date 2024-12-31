@@ -1,7 +1,7 @@
 [package]
-name = "boilerplate"
-edition = "2021"
+name = "{{project-name}}"
 version = "0.1.0"
+edition = "2021"
 
 [workspace]
 members = [".", "server", "entity", "migration"]

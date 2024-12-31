@@ -1,0 +1,15 @@
+[template]
+cargo_generate_version = ">=0.10.0"
+
+[placeholders]
+enable_jwt = { type = "bool", prompt = "Enable JWT authentication? (Uncomment the middleware line in router/todo.rs to secure todo routes)", default = false }
+
+# Database configuration
+pg_db_name = { type = "string", prompt = "PostgreSQL database name", default = "core" }
+pg_user = { type = "string", prompt = "PostgreSQL username?", default = "root" }
+pg_password = { type = "string", prompt = "PostgreSQL password?", default = "root" }
+
+[conditional.'enable_jwt']
+jwt_audience = { type = "string", prompt = "JWT Audience?" }
+jwt_issuer = { type = "string", prompt = "JWT Issuer?" }
+jwks_uri = { type = "string", prompt = "JWKS URI" }

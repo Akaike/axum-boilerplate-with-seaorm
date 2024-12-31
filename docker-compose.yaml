@@ -1,15 +1,15 @@
 services:
   postgres:
     image: postgres:latest
-    container_name: postgres
+    container_name: {{project-name}}_postgres
     environment:
-      POSTGRES_DB: core
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
+      POSTGRES_DB: {{pg_db_name}}
+      POSTGRES_USER: {{pg_user}}
+      POSTGRES_PASSWORD: {{pg_password}}
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - {{project-name}}_postgres_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  {{project-name}}_postgres_data:
