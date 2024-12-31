@@ -5,7 +5,7 @@ use super::app::AppState;
 
 #[derive(Clone)]
 pub struct TodoState {
-    pub(crate) todo_service: TodoService<TodoRepositoryImpl>,
+    pub todo_service: TodoService<TodoRepositoryImpl>,
 }
 
 impl FromRef<AppState> for TodoState {
