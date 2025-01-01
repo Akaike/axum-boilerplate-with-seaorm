@@ -8,7 +8,7 @@ use crate::{handler::todo, state::app::AppState};
 pub fn init() -> Router<AppState> {
     let router = Router::new()
         .route(
-            "/:todo_id",
+            "/{todo_id}",
             get(todo::get_by_id).put(todo::update).delete(todo::delete),
         )
         .route("/", post(todo::create));

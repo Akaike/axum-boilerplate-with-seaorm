@@ -1,9 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use axum::{
-    async_trait,
-    extract::{rejection::JsonRejection, FromRequest, Json, Request},
-};
+use axum::extract::{rejection::JsonRejection, FromRequest, Json, Request};
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
@@ -26,7 +23,6 @@ impl<T> DerefMut for ValidatedJson<T> {
     }
 }
 
-#[async_trait]
 impl<T, S> FromRequest<S> for ValidatedJson<T>
 where
     T: DeserializeOwned + Validate,
