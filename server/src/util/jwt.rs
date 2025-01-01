@@ -75,14 +75,13 @@ fn validate_and_get_claims(
         .map_err(|err| AuthError::InvalidToken(format!("Token validation failed: {}", err)))?;
 
     validate_expiration(&token_data.claims)?;
+    
     Ok(token_data.claims)
 }
 
 fn validate_expiration(claims: &Claims) -> Result<(), AuthError> {
-    let current_time = Utc::now().timestamp();
-    if claims.exp <= current_time {
-        Err(AuthError::TokenExpired)
-    } else {
-        Ok(())
+    match claims.exp <= Utc::now().timestamp() {
+        true => Err(AuthError::TokenExpired),
+        false => Ok(()),
     }
 }
