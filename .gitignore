@@ -27,3 +27,4 @@ Cargo.lock
 .env
 .idea
 .sqlx
+.DS_Store

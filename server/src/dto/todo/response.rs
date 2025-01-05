@@ -2,14 +2,10 @@ use entity::todo::Model;
 use serde::Serialize;
 use uuid::Uuid;
 
-/// Represents a todo item in API responses
 #[derive(Serialize)]
 pub struct Todo {
-    /// Unique identifier for the todo
     pub id: Uuid,
-    /// The title of the todo item
     pub title: String,
-    /// Whether the todo is completed
     pub completed: bool,
 }
 
