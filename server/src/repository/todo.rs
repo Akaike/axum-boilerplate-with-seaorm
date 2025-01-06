@@ -46,8 +46,7 @@ impl TodoRepository for TodoRepositoryImpl {
     }
 
     async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DbError> {
-        let todo_found_result = TodoEntity::find_by_id(id).one(&self.db).await?;
-        let original_todo = todo_found_result.ok_or(DbError::NotFound)?;
+        let original_todo = self.get_by_id(id).await?;
 
         let updated_todo = ActiveModel {
             id: Set(id),
