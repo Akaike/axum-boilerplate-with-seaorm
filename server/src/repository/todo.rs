@@ -64,11 +64,7 @@ impl TodoRepository for TodoRepositoryImpl {
             updated_at: Set(DateTime::from(Utc::now())),
         };
 
-        TodoEntity::update(updated_todo).exec(&self.db).await?;
-        TodoEntity::find_by_id(id)
-            .one(&self.db)
-            .await
-            .map(|opt| opt.ok_or(DbError::NotFound))?
+        Ok(TodoEntity::update(updated_todo).exec(&self.db).await?);
     }
 
     async fn delete(&self, id: Uuid) -> Result<(), DbError> {
