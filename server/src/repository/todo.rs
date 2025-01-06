@@ -60,10 +60,9 @@ impl TodoRepository for TodoRepositoryImpl {
     }
 
     async fn delete(&self, id: Uuid) -> Result<(), DbError> {
-        let todo = TodoEntity::find_by_id(id).one(&self.db).await?;
-        todo.ok_or(DbError::NotFound)?;
+        let todo = self.get_by_id(id).await?;
 
-        TodoEntity::delete_by_id(id).exec(&self.db).await?;
+        TodoEntity::delete_by_id(todo.id).exec(&self.db).await?;
 
         Ok(())
     }
