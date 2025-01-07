@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use entity::todo::{self, ActiveModel, Entity as TodoEntity, Model};
+use entity::todo::{ActiveModel, Entity as TodoEntity, Model};
 use sea_orm::{DatabaseConnection, EntityTrait, Set};
 use uuid::Uuid;
 
