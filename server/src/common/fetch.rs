@@ -1,7 +1,8 @@
 #![allow(non_upper_case_globals)]
 
-use crate::error::{ApiError, Error};
 use cached::proc_macro::cached;
+
+use crate::common::error::{ApiError, Error};
 
 #[cached(
     name = "fetch_cache",

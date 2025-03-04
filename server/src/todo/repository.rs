@@ -5,14 +5,14 @@ use uuid::Uuid;
 
 use async_trait::async_trait;
 
-use crate::error::DbError;
+use crate::common::error::DatabaseError;
 
 #[async_trait]
 pub trait TodoRepository: Send + Sync {
-    async fn get_by_id(&self, id: Uuid) -> Result<Model, DbError>;
-    async fn create(&self, title: String) -> Result<Model, DbError>;
-    async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DbError>;
-    async fn delete(&self, id: Uuid) -> Result<(), DbError>;
+    async fn get_by_id(&self, id: Uuid) -> Result<Model, DatabaseError>;
+    async fn create(&self, title: String) -> Result<Model, DatabaseError>;
+    async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DatabaseError>;
+    async fn delete(&self, id: Uuid) -> Result<(), DatabaseError>;
 }
 
 #[derive(Clone)]
@@ -22,14 +22,14 @@ pub struct TodoRepositoryImpl {
 
 #[async_trait]
 impl TodoRepository for TodoRepositoryImpl {
-    async fn get_by_id(&self, id: Uuid) -> Result<Model, DbError> {
+    async fn get_by_id(&self, id: Uuid) -> Result<Model, DatabaseError> {
         TodoEntity::find_by_id(id)
             .one(&self.db)
             .await
-            .map(|opt| opt.ok_or(DbError::NotFound))?
+            .map(|opt| opt.ok_or(DatabaseError::NotFound))?
     }
 
-    async fn create(&self, title: String) -> Result<Model, DbError> {
+    async fn create(&self, title: String) -> Result<Model, DatabaseError> {
         let date_time_now = DateTime::from(Utc::now());
 
         let new_todo = ActiveModel {
@@ -45,7 +45,7 @@ impl TodoRepository for TodoRepositoryImpl {
         Ok(self.get_by_id(res.last_insert_id).await?)
     }
 
-    async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DbError> {
+    async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DatabaseError> {
         let original_todo = self.get_by_id(id).await?;
 
         let updated_todo = ActiveModel {
@@ -59,7 +59,7 @@ impl TodoRepository for TodoRepositoryImpl {
         Ok(TodoEntity::update(updated_todo).exec(&self.db).await?)
     }
 
-    async fn delete(&self, id: Uuid) -> Result<(), DbError> {
+    async fn delete(&self, id: Uuid) -> Result<(), DatabaseError> {
         let todo = self.get_by_id(id).await?;
 
         TodoEntity::delete_by_id(todo.id).exec(&self.db).await?;

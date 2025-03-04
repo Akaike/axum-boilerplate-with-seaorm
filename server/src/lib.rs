@@ -1,21 +1,29 @@
 pub mod config;
 pub mod database;
-pub mod dto;
-pub mod error;
-pub mod handler;
-pub mod middleware;
-pub mod repository;
+pub mod middleware {
+    pub mod auth;
+}
 pub mod router;
 pub mod server;
-pub mod service;
-pub mod state;
-pub mod util;
-pub mod validator;
+pub mod todo {
+    pub mod model;
+    pub mod repository;
+    pub mod service;
+    pub mod controller;
+    pub mod router;
+}
+pub mod common {
+    pub mod error;
+    pub mod state;
+    pub mod fetch;
+    pub mod jwt;
+    pub mod validated_json;
+}
 
 use std::error::Error;
 
+use common::state::AppState;
 use config::CONFIG;
-use state::app::AppState;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
@@ -49,9 +57,8 @@ pub async fn start() -> Result<(), Box<dyn Error>> {
 }
 
 pub fn main() {
-    let result = start();
-
-    if let Some(err) = result.err() {
-        println!("Error: {err}");
+    if let Err(err) = start() {
+        eprintln!("Error: {err}");
+        std::process::exit(1);
     }
 }

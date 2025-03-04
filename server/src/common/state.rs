@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
 
-use crate::{repository::todo::TodoRepositoryImpl, service::todo::TodoService};
+use crate::todo::{repository::TodoRepositoryImpl, service::TodoService};
 
 #[derive(Clone)]
 pub struct AppState {

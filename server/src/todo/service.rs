@@ -1,8 +1,11 @@
 use entity::todo::Model as TodoModel;
 
-use crate::{error::Error, repository::todo::TodoRepository};
 use std::sync::Arc;
 use uuid::Uuid;
+
+use crate::common::error::Error;
+
+use super::repository::TodoRepository;
 
 #[derive(Clone)]
 pub struct TodoService<R: TodoRepository> {

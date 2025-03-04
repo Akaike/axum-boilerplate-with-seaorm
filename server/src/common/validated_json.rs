@@ -4,7 +4,7 @@ use axum::extract::{rejection::JsonRejection, FromRequest, Json, Request};
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
-use crate::error::{ApiError, Error};
+use crate::common::error::{ApiError, Error};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedJson<T>(pub T);

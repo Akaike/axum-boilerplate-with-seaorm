@@ -1,8 +1,8 @@
-mod todo;
+use crate::common::state::AppState;
+use crate::todo;
 
-use crate::state::app::AppState;
 use axum::Router;
 
 pub fn init() -> Router<AppState> {
-    Router::new().nest("/api/v1/todos", todo::init())
+    Router::new().nest("/api/v1/todos", todo::router::init())
 }

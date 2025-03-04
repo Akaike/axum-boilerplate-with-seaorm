@@ -2,8 +2,7 @@ use axum::{extract::Request, middleware::Next, response::Response};
 use reqwest::header;
 
 use crate::{
-    error::{AuthError, Error},
-    util::jwt,
+    common::error::{AuthError, Error}, common::jwt
 };
 
 pub async fn is_authenticated(mut req: Request, next: Next) -> Result<Response, Error> {

@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::fetch;
 use crate::{
-    config::CONFIG,
-    error::{ApiError, AuthError, Error},
+    common::error::{ApiError, AuthError, Error}, config::CONFIG
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
