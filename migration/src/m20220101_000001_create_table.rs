@@ -21,7 +21,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Todo::Table)
                     .if_not_exists()
-                    .col(uuid(Todo::Id).not_null().primary_key())
+                    .col(uuid(Todo::Id).not_null().primary_key().default(Expr::cust("gen_random_uuid()")))
                     .col(string(Todo::Title).not_null())
                     .col(boolean(Todo::Completed).not_null().default(false))
                     .col(
