@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sea-orm = { version = "~1.1.0", features = [
+sea-orm = { version = "1.1.6", features = [
     "sqlx-postgres",
     "runtime-tokio-native-tls",
     "macros",
