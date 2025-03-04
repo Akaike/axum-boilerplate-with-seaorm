@@ -3,9 +3,8 @@ use jsonwebtoken::{decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, V
 use serde::{Deserialize, Serialize};
 
 use super::fetch;
-use crate::{
-    common::error::{ApiError, AuthError, Error}, config::CONFIG
-};
+use crate::config::CONFIG;
+use crate::common::error::ApiError;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
@@ -13,7 +12,7 @@ pub struct Claims {
     pub exp: i64,
 }
 
-pub async fn validate(token: &str) -> Result<Claims, AuthError> {
+pub async fn validate(token: &str) -> Result<Claims, ApiError> {
     let kid = extract_kid(token)?;
     let decoding_key = extract_decoding_key(&kid).await?;
     let validation = create_validation();
@@ -22,40 +21,32 @@ pub async fn validate(token: &str) -> Result<Claims, AuthError> {
     Ok(claims)
 }
 
-fn extract_kid(token: &str) -> Result<String, AuthError> {
+fn extract_kid(token: &str) -> Result<String, ApiError> {
     let header = decode_header(token)
-        .map_err(|e| AuthError::InvalidToken(format!("Invalid token header: {}", e)))?;
+        .map_err(|e| ApiError::Unauthorized(format!("Invalid token header: {}", e)))?;
     header
         .kid
-        .ok_or_else(|| AuthError::InvalidToken("Missing KID in token".into()))
+        .ok_or_else(|| ApiError::Unauthorized("Missing KID in token".into()))
 }
 
-async fn extract_decoding_key(kid: &str) -> Result<DecodingKey, AuthError> {
+async fn extract_decoding_key(kid: &str) -> Result<DecodingKey, ApiError> {
     let jwks = fetch_jwks().await?;
 
     let jwk = jwks
         .find(kid)
-        .ok_or_else(|| AuthError::InvalidToken("Key not found in JWKS".into()))?;
+        .ok_or_else(|| ApiError::Unauthorized("Key not found in JWKS".into()))?;
 
     DecodingKey::from_jwk(jwk)
-        .map_err(|e| AuthError::InvalidToken(format!("Failed to create decoding key: {}", e)))
+        .map_err(|e| ApiError::Unauthorized(format!("Failed to create decoding key: {}", e)))
 }
 
-async fn fetch_jwks() -> Result<JwkSet, AuthError> {
+async fn fetch_jwks() -> Result<JwkSet, ApiError> {
     let json_value = fetch::fetch_json_cached(&CONFIG.jwks_uri)
         .await
-        .map_err(|e| match e {
-            Error::Api(ApiError::RequestFailed(msg)) => {
-                AuthError::JwksError(format!("Failed to fetch JWKS: {}", msg))
-            }
-            Error::Api(ApiError::ParseError(msg)) => {
-                AuthError::JwksError(format!("Invalid JWKS response: {}", msg))
-            }
-            _ => AuthError::JwksError("Unexpected error fetching JWKS".to_string()),
-        })?;
+        .map_err(|e| ApiError::Unauthorized(format!("Failed to fetch JWKS: {}", e)))?;
 
     serde_json::from_value(json_value)
-        .map_err(|e| AuthError::JwksError(format!("Failed to parse JWKS: {}", e)))
+        .map_err(|e| ApiError::Unauthorized(format!("Failed to parse JWKS: {}", e)))
 }
 
 fn create_validation() -> Validation {
@@ -69,18 +60,18 @@ fn validate_and_get_claims(
     token: &str,
     decoding_key: &DecodingKey,
     validation: &Validation,
-) -> Result<Claims, AuthError> {
+) -> Result<Claims, ApiError> {
     let token_data = decode::<Claims>(token, decoding_key, validation)
-        .map_err(|err| AuthError::InvalidToken(format!("Token validation failed: {}", err)))?;
+        .map_err(|err| ApiError::Unauthorized(format!("Token validation failed: {}", err)))?;
 
     validate_expiration(&token_data.claims)?;
     
     Ok(token_data.claims)
 }
 
-fn validate_expiration(claims: &Claims) -> Result<(), AuthError> {
+fn validate_expiration(claims: &Claims) -> Result<(), ApiError> {
     match claims.exp <= Utc::now().timestamp() {
-        true => Err(AuthError::TokenExpired),
+        true => Err(ApiError::Unauthorized("Token expired".to_string())),
         false => Ok(()),
     }
 }

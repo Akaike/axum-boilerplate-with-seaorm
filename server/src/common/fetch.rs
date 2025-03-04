@@ -1,8 +1,7 @@
 #![allow(non_upper_case_globals)]
 
 use cached::proc_macro::cached;
-
-use crate::common::error::{ApiError, Error};
+use crate::common::error::ApiError;
 
 #[cached(
     name = "fetch_cache",
@@ -11,30 +10,19 @@ use crate::common::error::{ApiError, Error};
     convert = r#"{ url.to_string() }"#,
     result = true
 )]
-pub async fn fetch_json_cached(url: &str) -> Result<serde_json::Value, Error> {
+pub async fn fetch_json_cached(url: &str) -> Result<serde_json::Value, ApiError> {
     let res = reqwest::get(url)
         .await
-        .map_err(|e| {
-            Error::Api(ApiError::RequestFailed(format!(
-                "Failed to fetch resource: {}",
-                e
-            )))
-        })?
+        .map_err(|e| ApiError::BadRequest(format!("Failed to fetch resource: {}", e)))?
         .error_for_status()
-        .map_err(|e| Error::Api(ApiError::RequestFailed(format!("Request failed: {}", e))))?;
+        .map_err(|e| ApiError::BadRequest(format!("Request failed: {}", e)))?;
 
     let body = res.text().await.map_err(|e| {
-        Error::Api(ApiError::RequestFailed(format!(
-            "Failed to get response body: {}",
-            e
-        )))
+        ApiError::BadRequest(format!("Failed to get response body: {}", e))
     })?;
 
     serde_json::from_str(&body).map_err(|e| {
-        Error::Api(ApiError::ParseError(format!(
-            "Failed to parse response: {}. Body: {}",
-            e, body
-        )))
+        ApiError::BadRequest(format!("Failed to parse response: {}. Body: {}", e, body))
     })
 }
 
@@ -82,10 +70,7 @@ mod tests {
             .await;
 
         let result = fetch_json_cached(&mock_server.uri()).await;
-        assert!(matches!(
-            result.unwrap_err(),
-            Error::Api(ApiError::ParseError(_))
-        ));
+        assert!(matches!(result.unwrap_err(), ApiError::BadRequest(_)));
     }
 
     #[tokio::test]
@@ -98,18 +83,12 @@ mod tests {
             .await;
 
         let result = fetch_json_cached(&mock_server.uri()).await;
-        assert!(matches!(
-            result.unwrap_err(),
-            Error::Api(ApiError::RequestFailed(_))
-        ));
+        assert!(matches!(result.unwrap_err(), ApiError::BadRequest(_)));
     }
 
     #[tokio::test]
     async fn test_fetch_network_error() {
         let result = fetch_json_cached("http://invalid-url").await;
-        assert!(matches!(
-            result.unwrap_err(),
-            Error::Api(ApiError::RequestFailed(_))
-        ));
+        assert!(matches!(result.unwrap_err(), ApiError::BadRequest(_)));
     }
 }

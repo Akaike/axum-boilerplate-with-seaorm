@@ -25,8 +25,8 @@ impl TodoRepository for TodoRepositoryImpl {
     async fn get_by_id(&self, id: Uuid) -> Result<Model, DatabaseError> {
         TodoEntity::find_by_id(id)
             .one(&self.db)
-            .await
-            .map(|opt| opt.ok_or(DatabaseError::NotFound))?
+            .await?
+            .ok_or(DatabaseError::NotFound)
     }
 
     async fn create(&self, title: String) -> Result<Model, DatabaseError> {
