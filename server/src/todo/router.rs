@@ -3,13 +3,15 @@ use axum::{
     Router,
 };
 
-use crate::{todo::controller, common::state::AppState};
+use crate::{common::state::AppState, todo::controller};
 
 pub fn init() -> Router<AppState> {
     let router = Router::new()
         .route(
             "/{todo_id}",
-            get(controller::get_by_id).put(controller::update).delete(controller::delete),
+            get(controller::get_by_id)
+                .put(controller::update)
+                .delete(controller::delete),
         )
         .route("/", post(controller::create));
 

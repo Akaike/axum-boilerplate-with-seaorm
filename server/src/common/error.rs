@@ -1,9 +1,11 @@
+use std::borrow::Cow;
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
     Json,
 };
-use sea_orm::DbErr;
+use sea_orm::{DbErr, SqlErr};
 use serde_json::json;
 use thiserror::Error;
 use validator::ValidationErrors;
@@ -13,128 +15,159 @@ pub type ServiceResult<T> = Result<T, ServiceError>;
 
 #[derive(Debug, Error)]
 pub enum ApiError {
-    #[error("Unauthorized: {0}")]
-    Unauthorized(String),
-    
-    #[error("Forbidden: {0}")]
-    Forbidden(String),
-    
-    #[error("Not found: {0}")]
-    NotFound(String),
-    
-    #[error("Bad request: {0}")]
+    #[error("unauthorized")]
+    Unauthorized(&'static str),
+    #[error("forbidden")]
+    Forbidden(&'static str),
+    #[error("not found")]
+    NotFound(&'static str),
+    #[error("bad request")]
     BadRequest(String),
-    
-    #[error("Conflict: {0}")]
-    Conflict(String),
-    
-    #[error("Internal server error: {0}")]
+    #[error("conflict")]
+    Conflict(&'static str),
+    #[error(transparent)]
     Internal(#[from] anyhow::Error),
-    
-    #[error("Service error: {0}")]
-    ServiceError(#[from] ServiceError),
-
-    #[error("Validation failed: {0}")]
-    ValidationError(#[from] ValidationErrors),
 }
 
 #[derive(Debug, Error)]
 pub enum ServiceError {
-    #[error("Resource not found: {0}")]
-    NotFound(String),
-    
-    #[error("Resource already exists: {0}")]
-    AlreadyExists(String),
-    
-    #[error("Validation error: {0}")]
-    ValidationError(String),
-    
-    #[error("Database error: {0}")]
+    #[error("resource not found")]
+    NotFound,
+    #[error("resource already exists")]
+    AlreadyExists,
+    #[error("validation error")]
+    ValidationError,
+    #[error("database error")]
     DatabaseError(#[from] DatabaseError),
 }
 
 #[derive(Debug, Error)]
 pub enum DatabaseError {
-    #[error("Database error: {0}")]
-    Query(String),
-
-    #[error("Record not found")]
+    #[error("record not found")]
     NotFound,
-
-    #[error("Error during insert")]
-    Insert,
-
-    #[error("A record with this identifier already exists")]
-    UniqueViolation,
-
-    #[error("Internal database error")]
-    Internal(String),
+    #[error("unique constraint violation")]
+    Conflict,
+    #[error("operation failed")]
+    OperationFailed,
+    #[error("internal database error")]
+    Internal,
 }
 
 impl From<DbErr> for DatabaseError {
     fn from(err: DbErr) -> Self {
-        match err {
-            DbErr::RecordNotFound(_) => DatabaseError::NotFound,
-            DbErr::Query(msg) => {
-                if msg.to_string().contains("unique") || msg.to_string().contains("duplicate") {
-                    return DatabaseError::UniqueViolation
-                }
+        use DatabaseError::*;
 
-                eprintln!("Database error: {}", msg);
-                DatabaseError::Query("Database operation failed".to_string())
-            }
-            DbErr::Exec(_) => DatabaseError::Query("Database execution error".to_string()),
-            DbErr::Conn(_) => DatabaseError::Query("Database connection error".to_string()),
-            DbErr::RecordNotInserted => DatabaseError::Insert,
-            _ => {
-                eprintln!("Unexpected database error: {:?}", err);
-                DatabaseError::Internal(err.to_string())
-            }
+        match &err {
+            DbErr::RecordNotFound(_) => NotFound,
+            _ if matches!(err.sql_err(), Some(SqlErr::UniqueConstraintViolation(_))) => Conflict,
+
+            DbErr::ConnectionAcquire(_)
+            | DbErr::Conn(_)
+            | DbErr::RecordNotInserted
+            | DbErr::RecordNotUpdated
+            | DbErr::AttrNotSet(_)
+            | DbErr::Query(_)
+            | DbErr::Exec(_) => OperationFailed,
+
+            _ => Internal,
+        }
+    }
+}
+
+impl From<DbErr> for ServiceError {
+    fn from(err: DbErr) -> Self {
+        ServiceError::DatabaseError(err.into())
+    }
+}
+
+impl From<ValidationErrors> for ApiError {
+    fn from(err: ValidationErrors) -> Self {
+        ApiError::BadRequest(err.to_string())
+    }
+}
+
+impl From<ServiceError> for ApiError {
+    fn from(err: ServiceError) -> Self {
+        match err {
+            ServiceError::NotFound => ApiError::NotFound("resource not found".into()),
+            ServiceError::AlreadyExists => ApiError::Conflict("resource already exists".into()),
+            ServiceError::ValidationError => ApiError::BadRequest("validation failed".into()),
+            ServiceError::DatabaseError(db) => match db {
+                DatabaseError::NotFound => ApiError::NotFound("resource not found".into()),
+                DatabaseError::Conflict => ApiError::Conflict("resource already exists".into()),
+                DatabaseError::OperationFailed => ApiError::BadRequest("operation failed".into()),
+                DatabaseError::Internal => {
+                    ApiError::Internal(anyhow::anyhow!("database internal error"))
+                }
+            },
+        }
+    }
+}
+
+impl ApiError {
+    fn status(&self) -> StatusCode {
+        use ApiError::*;
+        match self {
+            Unauthorized(_) => StatusCode::UNAUTHORIZED,
+            Forbidden(_) => StatusCode::FORBIDDEN,
+            NotFound(_) => StatusCode::NOT_FOUND,
+            BadRequest(_) => StatusCode::BAD_REQUEST,
+            Conflict(_) => StatusCode::CONFLICT,
+            Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+
+    fn client_msg(&self) -> Cow<'static, str> {
+        use ApiError::*;
+        match self {
+            Unauthorized(m) | Forbidden(m) | NotFound(m) | Conflict(m) => Cow::Borrowed(m),
+            BadRequest(m) => Cow::Owned(m.clone()),
+            Internal(_) => Cow::Borrowed("an internal error occurred"),
         }
     }
 }
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
-        let (status, error_message) = match self {
-            Self::BadRequest(message) => (StatusCode::BAD_REQUEST, message),
-            Self::NotFound(message) => (StatusCode::NOT_FOUND, message),
-            Self::Unauthorized(message) => (StatusCode::UNAUTHORIZED, message),
-            Self::Forbidden(message) => (StatusCode::FORBIDDEN, message),
-            Self::Conflict(message) => (StatusCode::CONFLICT, message),
-            Self::ValidationError(err) => (StatusCode::BAD_REQUEST, err.to_string()),
-            Self::Internal(err) => {
-                eprintln!("Internal server error: {:?}", err);
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "An internal server error occurred".to_string(),
-                )
-            }
-            Self::ServiceError(err) => match err {
-                ServiceError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
-                ServiceError::AlreadyExists(msg) => (StatusCode::CONFLICT, msg),
-                ServiceError::ValidationError(msg) => (StatusCode::BAD_REQUEST, msg),
-                ServiceError::DatabaseError(db_err) => match db_err {
-                    DatabaseError::Query(msg) => (StatusCode::BAD_REQUEST, msg),
-                    DatabaseError::NotFound => (StatusCode::NOT_FOUND, "Resource not found".to_string()),
-                    DatabaseError::Insert => (StatusCode::BAD_REQUEST, "Operation failed".to_string()),
-                    DatabaseError::UniqueViolation => (
-                        StatusCode::CONFLICT, 
-                        "Request could not be completed. Please try again with different credentials".to_string()
-                    ),
-                    DatabaseError::Internal(_) => (
-                        StatusCode::INTERNAL_SERVER_ERROR, 
-                        "An internal error occurred".to_string()
-                    ),
+        let status = self.status();
+        (
+            status,
+            Json(json!({
+                "error": {
+                    "status": status.as_u16(),
+                    "message": self.client_msg(),
                 }
-            }
-        };
+            })),
+        )
+            .into_response()
+    }
+}
 
-        (status, Json(json!({
-            "error": {
-                "message": error_message,
-                "status": status.as_u16()
-            }
-        }))).into_response()
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sea_orm::DbErr;
+
+    #[test]
+    fn db_err_maps_to_api_status() {
+        let cases = vec![(
+            DbErr::RecordNotFound("Record not found".to_string()),
+            StatusCode::NOT_FOUND,
+        )];
+
+        for (db_err, expected_status) in cases {
+            let service_err: ServiceError = db_err.into();
+            let api_err: ApiError = service_err.into();
+            assert_eq!(api_err.status(), expected_status);
+        }
+    }
+
+    #[test]
+    fn validation_maps_to_bad_request() {
+        let mut ve = ValidationErrors::new();
+        ve.add("field", validator::ValidationError::new("invalid"));
+        let api_err: ApiError = ve.into();
+
+        assert_eq!(api_err.status(), StatusCode::BAD_REQUEST);
     }
 }

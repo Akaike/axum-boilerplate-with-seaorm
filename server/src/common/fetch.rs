@@ -1,7 +1,7 @@
 #![allow(non_upper_case_globals)]
 
-use cached::proc_macro::cached;
 use crate::common::error::ApiError;
+use cached::proc_macro::cached;
 
 #[cached(
     name = "fetch_cache",
@@ -17,9 +17,10 @@ pub async fn fetch_json_cached(url: &str) -> Result<serde_json::Value, ApiError>
         .error_for_status()
         .map_err(|e| ApiError::BadRequest(format!("Request failed: {}", e)))?;
 
-    let body = res.text().await.map_err(|e| {
-        ApiError::BadRequest(format!("Failed to get response body: {}", e))
-    })?;
+    let body = res
+        .text()
+        .await
+        .map_err(|e| ApiError::BadRequest(format!("Failed to get response body: {}", e)))?;
 
     serde_json::from_str(&body).map_err(|e| {
         ApiError::BadRequest(format!("Failed to parse response: {}. Body: {}", e, body))

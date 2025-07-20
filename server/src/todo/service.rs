@@ -3,7 +3,7 @@ use entity::todo::Model;
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::common::error::ServiceResult;
+use crate::common::error::{ServiceError, ServiceResult};
 
 use super::repository::TodoRepository;
 
@@ -18,11 +18,11 @@ impl<R: TodoRepository> TodoService<R> {
     }
 
     pub async fn get_todo_by_id(&self, id: Uuid) -> ServiceResult<Model> {
-        Ok(self.repo.get_by_id(id).await?)
+        self.repo.get_by_id(id).await.map_err(ServiceError::from)
     }
 
     pub async fn create_todo(&self, title: String) -> ServiceResult<Model> {
-        Ok(self.repo.create(title).await?)
+        self.repo.create(title).await.map_err(ServiceError::from)
     }
 
     pub async fn update_todo(
@@ -31,10 +31,13 @@ impl<R: TodoRepository> TodoService<R> {
         title: String,
         completed: bool,
     ) -> ServiceResult<Model> {
-        Ok(self.repo.update(id, title, completed).await?)
+        self.repo
+            .update(id, title, completed)
+            .await
+            .map_err(ServiceError::from)
     }
 
     pub async fn delete_todo(&self, id: Uuid) -> ServiceResult<()> {
-        Ok(self.repo.delete(id).await?)
+        self.repo.delete(id).await.map_err(ServiceError::from)
     }
 }

@@ -6,18 +6,19 @@ pub mod middleware {
 pub mod router;
 pub mod server;
 pub mod todo {
+    pub mod controller;
     pub mod model;
     pub mod repository;
-    pub mod service;
-    pub mod controller;
     pub mod router;
+    pub mod service;
 }
 pub mod common {
     pub mod error;
-    pub mod state;
     pub mod fetch;
     pub mod jwt;
+    pub mod state;
     pub mod validated_json;
+    pub mod validated_path;
 }
 
 use std::error::Error;
