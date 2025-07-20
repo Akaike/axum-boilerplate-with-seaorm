@@ -8,6 +8,7 @@ use async_trait::async_trait;
 #[async_trait]
 pub trait TodoRepository: Send + Sync {
     async fn get_by_id(&self, id: Uuid) -> Result<Model, DbErr>;
+    async fn get_all(&self) -> Result<Vec<Model>, DbErr>;
     async fn create(&self, title: String) -> Result<Model, DbErr>;
     async fn update(&self, id: Uuid, title: String, completed: bool) -> Result<Model, DbErr>;
     async fn delete(&self, id: Uuid) -> Result<(), DbErr>;
@@ -25,6 +26,10 @@ impl TodoRepository for TodoRepositoryImpl {
             .one(&self.db)
             .await?
             .ok_or(DbErr::RecordNotFound("Todo not found".to_string()))
+    }
+
+    async fn get_all(&self) -> Result<Vec<Model>, DbErr> {
+        Entity::find().all(&self.db).await
     }
 
     async fn create(&self, title: String) -> Result<Model, DbErr> {

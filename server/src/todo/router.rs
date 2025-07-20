@@ -1,7 +1,4 @@
-use axum::{
-    routing::{get, post},
-    Router,
-};
+use axum::{routing::get, Router};
 
 use crate::{common::state::AppState, todo::controller};
 
@@ -13,7 +10,7 @@ pub fn init() -> Router<AppState> {
                 .put(controller::update)
                 .delete(controller::delete),
         )
-        .route("/", post(controller::create));
+        .route("/", get(controller::get_all).post(controller::create));
 
     // Uncomment to enable JWT authentication for all routes in this router
     // router.layer(middleware::from_fn(is_authenticated));

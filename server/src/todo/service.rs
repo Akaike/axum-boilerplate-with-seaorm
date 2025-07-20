@@ -21,6 +21,10 @@ impl<R: TodoRepository> TodoService<R> {
         self.repo.get_by_id(id).await.map_err(ServiceError::from)
     }
 
+    pub async fn get_all_todos(&self) -> ServiceResult<Vec<Model>> {
+        self.repo.get_all().await.map_err(ServiceError::from)
+    }
+
     pub async fn create_todo(&self, title: String) -> ServiceResult<Model> {
         self.repo.create(title).await.map_err(ServiceError::from)
     }
