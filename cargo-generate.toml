@@ -15,4 +15,3 @@ pg_password = { type = "string", prompt = "PostgreSQL password?", default = "roo
 jwt_audience = { type = "string", prompt = "JWT Audience?" }
 jwt_issuer = { type = "string", prompt = "JWT Issuer?" }
 jwks_uri = { type = "string", prompt = "JWKS URI" }
-
