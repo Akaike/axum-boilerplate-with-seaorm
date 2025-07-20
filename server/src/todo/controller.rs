@@ -14,6 +14,21 @@ use crate::{
 
 use super::model::{CreateTodoRequest, TodoResponse, UpdateTodoRequest};
 
+pub async fn get_all(
+    State(state): State<AppState>,
+) -> ApiResult<Json<Vec<TodoResponse>>> {
+    let todos = state
+        .todo_service
+        .get_all_todos()
+        .await
+        .map_err(|err| {
+            error!("Failed to get all todos: {:?}", err);
+            err
+        })?;
+
+    Ok(Json(todos.into_iter().map(TodoResponse::from).collect()))
+}
+
 pub async fn get_by_id(
     State(state): State<AppState>,
     ValidatedPath(todo_id): ValidatedPath<Uuid>,
