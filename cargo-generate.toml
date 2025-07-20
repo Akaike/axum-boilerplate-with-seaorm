@@ -1,6 +1,8 @@
 [template]
 cargo_generate_version = ">=0.10.0"
 
+exclude = [".DS_Store", "**/.DS_Store"]
+
 [placeholders]
 enable_jwt = { type = "bool", prompt = "Enable JWT authentication? (Uncomment the middleware line in router/todo.rs to secure todo routes)", default = false }
 
@@ -13,3 +15,4 @@ pg_password = { type = "string", prompt = "PostgreSQL password?", default = "roo
 jwt_audience = { type = "string", prompt = "JWT Audience?" }
 jwt_issuer = { type = "string", prompt = "JWT Issuer?" }
 jwks_uri = { type = "string", prompt = "JWKS URI" }
+
